@@ -16,9 +16,11 @@ turns: <how many recent turns show it>
 
 `status` is always one of these three.
 
-- `막힘`: a signal is clearly present. Go on to Analyze.
+- `막힘`: a signal is clearly present. Go on to Analyze. Clearly stuck with no description of how it fails is still `막힘`, not `정보 부족`.
 - `아님`: no signal. Nothing is handed on; do the requested work as usual. `signal`, `evidence` and `turns` are not written.
-- `정보 부족`: something looks stuck, but the conversation does not say enough to be sure. `signal` is the closest id, or `모름`. Analyze still runs and writes `모름` in every field it cannot support; the reply does not ask the user again, it starts with a way to check (확인 방법).
+- `정보 부족`: it is hard to tell whether the user is stuck at all (for example one short message, so there is no way to know if it is a repeat). `signal` is the closest id, or `모름`. Analyze still runs; the reply does not ask the user again, it starts with a way to check (확인 방법).
+
+Whatever the `status`, a field with no basis is `모름`. This is not special to `정보 부족`.
 
 ## Analyze result (analyze.md → improve.md)
 
@@ -45,7 +47,7 @@ later: <other things the user wanted, short list; 없음 if there are none>
 - Three ways to write a value, and no others:
   - Stated in the conversation (the user's words or error text they pasted): write it as it is.
   - Inferred: end it with `(추측)`, in whichever field it appears.
-  - No basis: write `모름`. Do not invent, and do not use another word for it.
+  - No basis: write `모름`, whatever the `status`. Do not invent, and do not use another word for it.
 - These results are internal. The user sees only the reply format in `SKILL.md`.
 
 ## Worked example: one chain from start to end
