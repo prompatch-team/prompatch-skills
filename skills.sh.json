@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "PromPatch",
+      "description": "바이브 코딩 중 막힌 순간을 감지해, 구체적인 요청으로 바꿔 주는 스킬",
+      "skills": ["prompatch"]
+    }
+  ]
+}
