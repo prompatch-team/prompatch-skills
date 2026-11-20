@@ -7,7 +7,7 @@ Read when: the Detect result's `status` is `막힘` or `정보 부족`.
 
 ## Input
 
-The Detect result is the only input: `status`, `signal`, `evidence`, `turns`. Analyze runs when `status` is `막힘` or `정보 부족`. When it is `정보 부족`, analyze the same way and write `모름` in every field the conversation cannot support. Start from the quoted `evidence` and read back through the conversation around it:
+The Detect result is the only input: `status`, `signal`, `evidence`, `turns`. Analyze runs when `status` is `막힘` or `정보 부족`, and works the same way for both. Whatever the `status`, a field the conversation cannot support is `모름`. Start from the quoted `evidence` and read back through the conversation around it:
 
 - the user's own words, including any error text they pasted. These are the facts.
 - what the AI said it did in earlier replies ("첫 화면 아래에 공유 버튼을 추가했어요"). This shows what was attempted and where, not that it works.
