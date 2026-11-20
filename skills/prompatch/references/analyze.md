@@ -1,13 +1,13 @@
 # Analyze: what the user is trying to do and where it breaks
 
 Summary: how to turn the Detect result into the five Analyze fields (intent, trying_now, stuck_at, known, guessed) from what the conversation shows, keeping facts and guesses apart.
-Read when: a stuck signal was found.
+Read when: the Detect result's `status` is `막힘` or `정보 부족`.
 
 <!-- 담당: 카티 (분석). 질문 대신 추측을 쓰고 (추측)으로 표시하는 원칙을 지킨다. -->
 
 ## Input
 
-The Detect result is the only input: `signal`, `evidence`, `turns`. Start from the quoted `evidence` and read back through the conversation around it:
+The Detect result is the only input: `status`, `signal`, `evidence`, `turns`. Analyze runs when `status` is `막힘` or `정보 부족`. When it is `정보 부족`, analyze the same way and write `모름` in every field the conversation cannot support. Start from the quoted `evidence` and read back through the conversation around it:
 
 - the user's own words, including any error text they pasted. These are the facts.
 - what the AI said it did in earlier replies ("첫 화면 아래에 공유 버튼을 추가했어요"). This shows what was attempted and where, not that it works.
@@ -45,7 +45,7 @@ If `stuck_at` is `goal`, intent comes first: the improved request should fix the
 
 Each thing you write belongs to one of three groups.
 
-- **Stated → `known`.** The user said it, pasted it, or the AI's earlier reply said it. You must be able to point to the line. Keep the user's wording and copy error text exactly (the key part if it is long).
+- **Stated → `known`.** The user said it or pasted it. You must be able to point to the line. Keep the user's wording and copy error text exactly (the key part if it is long).
 - **Inferred → `guessed`, ending with `(추측)`.** Why they want it, what "안 돼" means, which device, what causes the problem. A guess needs something in the conversation to stand on: a word the user chose, the kind of app, the language they write in. Keep the one or two guesses the next request depends on.
 - **No basis → `모름`.** Write `모름` instead of a plausible story. An unmarked invention reaches the user looking like a fact, and they will not know to correct it.
 
@@ -57,7 +57,16 @@ Details that are easy to get wrong:
 - If `intent` or the place in `stuck_at` is itself inferred, end that line with `(추측)` too.
 - Do not swap the user's words for technical ones. "빨간 글씨" turned into "런타임 오류" is already a guess about the cause.
 
-When the conversation says almost nothing, the result stays thin. `stuck_at` still needs one kind, so pick the likeliest and mark it. For "예약하기 만들어 줘" → "안 돼" → "다시 해 줘", with no description and no error text:
+A conversation can be clearly stuck and still say almost nothing about how. That is `막힘`, not `정보 부족`: `정보 부족` is only for when it is hard to tell whether the user is stuck at all (for example one short message, so there is no repeat to see). Either way the fields with no basis are `모름`, and the result stays thin. `stuck_at` still needs one kind, so pick the likeliest and mark it. For "예약하기 만들어 줘" → "안 돼" → "다시 해 줘", with no description and no error text, the Detect result is:
+
+```
+status: 막힘
+signal: repeat-short
+evidence: "안 돼", "다시 해 줘"
+turns: 2
+```
+
+and the Analyze result is:
 
 ```
 intent: 손님이 사이트에서 예약을 남길 수 있게 하고 싶다 (추측)
@@ -76,7 +85,7 @@ How it fails has no basis here, so `guessed` is `모름` rather than an invented
 
 ## Example 1: a feature that does not respond
 
-The share-button situation from the worked example in `handoff.md`, shown with the AI's replies and one more user turn so that every `known` item has a line behind it.
+Same conversation as the worked example in `handoff.md`.
 
 ```
 사용자: 공유 버튼 만들어 줘
@@ -89,6 +98,7 @@ AI: 공유 버튼을 고쳤어요.
 
 Detect result:
 ```
+status: 막힘
 signal: repeat-short
 evidence: "안 돼", "다시 해 줘"
 turns: 2
@@ -115,6 +125,7 @@ AI: 예약을 저장하는 부분을 고쳤어요.
 
 Detect result:
 ```
+status: 막힘
 signal: same-error
 evidence: "아까랑 똑같아. Error: Failed to fetch"
 turns: 2
