@@ -59,7 +59,7 @@ Details that are easy to get wrong:
 - If `intent` or the place in `stuck_at` is itself inferred, end that line with `(추측)` too.
 - Do not swap the user's words for technical ones. "빨간 글씨" turned into "런타임 오류" is already a guess about the cause.
 
-Something that worked before: when the user says a thing used to work ("아까는 됐는데", "이거 고쳤더니 저게 깨졌어"), write it in `known` as its own item, `전에 됨: <the thing, in the user's words>`, one thing per item. The next step uses it to fill [건드리지 말 것]. Write only what the user said worked; do not add things that probably worked before. That the earlier change broke it is a cause, so it goes in `guessed`. See Example 3.
+Something that worked before: when the user says a thing used to work ("아까는 됐는데", "이거 고쳤더니 저게 깨졌어"), write it in `known` as its own item, `전에 됨: <the thing, in the user's words>`, one thing per item. It tells the next step what must keep working or work again. Write only what the user said worked; do not add things that probably worked before. That the earlier change broke it is a cause, so it goes in `guessed`. See Example 3.
 
 A conversation can be clearly stuck and still say almost nothing about how. That is `막힘`, not `정보 부족`: `정보 부족` is only for when it is hard to tell whether the user is stuck at all (for example one short message, so there is no repeat to see). Either way the fields with no basis are `모름`, and the result stays thin. `stuck_at` still needs one kind, so pick the likeliest and mark it. For "예약하기 만들어 줘" → "안 돼" → "다시 해 줘", with no description and no error text, the Detect result is:
 
@@ -76,7 +76,7 @@ and the Analyze result is:
 intent: 손님이 사이트에서 예약을 남길 수 있게 하고 싶다 (추측)
 trying_now: 예약하기를 만들어 달라고 한 뒤 "안 돼"라며 다시 해 달라고 함
 stuck_at: feature - '예약하기'가 되지 않음 (추측)
-known: 예약하기를 요청함, 만든 뒤 "안 돼"라고 함
+known: 예약하기를 만들어 달라고 함, "안 돼"라고 함, 다시 해 달라고 함
 guessed: 모름
 ```
 
