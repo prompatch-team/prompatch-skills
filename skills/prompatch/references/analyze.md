@@ -12,6 +12,8 @@ The Detect result is the only input: `status`, `signal`, `evidence`, `turns`. An
 - the user's own words, including any error text they pasted. These are the facts.
 - what the AI said it did in earlier replies ("첫 화면 아래에 공유 버튼을 추가했어요"). This shows what was attempted and where, not that it works.
 
+The AI's earlier replies may fill `trying_now` and the place in `stuck_at`, but never `known`: `known` holds only what the user said or pasted.
+
 Nothing else is a source. Do not open project files to hunt for the cause: many places that load this skill cannot, and what matters here is how the result differs from what the user expected, not which line of code is wrong.
 
 ## Fill the five fields, in order
@@ -39,7 +41,7 @@ If more than one kind fits, take the first that applies in this order: `error`, 
 
 The signal is a hint, not a rule: `same-error` usually means `error`; `tell-me-only` and `do-everything` usually mean `goal`; `repeat-short`, `wrong-insist` and `not-mine` can be any kind. What the user described decides.
 
-If `stuck_at` is `goal`, intent comes first: the improved request should fix the goal, not the code.
+If `stuck_at` is `goal`, fill `intent` with the most care.
 
 ## known and guessed
 
@@ -56,6 +58,8 @@ Details that are easy to get wrong:
 - "안 돼" alone does not say how it fails. Look for the turn where the user described it; if there is none, how it fails is a guess or `모름`.
 - If `intent` or the place in `stuck_at` is itself inferred, end that line with `(추측)` too.
 - Do not swap the user's words for technical ones. "빨간 글씨" turned into "런타임 오류" is already a guess about the cause.
+
+Something that worked before: when the user says a thing used to work ("아까는 됐는데", "이거 고쳤더니 저게 깨졌어"), write it in `known` as its own item, `전에 됨: <the thing, in the user's words>`, one thing per item. The next step uses it to fill [건드리지 말 것]. Write only what the user said worked; do not add things that probably worked before. That the earlier change broke it is a cause, so it goes in `guessed`. See Example 3.
 
 A conversation can be clearly stuck and still say almost nothing about how. That is `막힘`, not `정보 부족`: `정보 부족` is only for when it is hard to tell whether the user is stuck at all (for example one short message, so there is no repeat to see). Either way the fields with no basis are `모름`, and the result stays thin. `stuck_at` still needs one kind, so pick the likeliest and mark it. For "예약하기 만들어 줘" → "안 돼" → "다시 해 줘", with no description and no error text, the Detect result is:
 
@@ -136,11 +140,41 @@ Analyze result:
 intent: 손님이 사이트에서 예약을 남길 수 있게 하고 싶다 (추측)
 trying_now: 예약하기를 누르면 뜨는 오류를 고쳐 달라고 했지만 고친 뒤에도 같은 오류가 뜸
 stuck_at: error - '예약하기'를 누르면 "Failed to fetch"라는 글이 뜸
-known: 예약하기를 누를 때 뜸, 글은 "Error: Failed to fetch", 한 번 고친 뒤에도 똑같음
+known: 예약하기를 누를 때 뜸, 글은 "Error: Failed to fetch", 아까와 똑같음
 guessed: 예약 내용을 저장하는 곳과 연결이 안 된 것 (추측)
 ```
 
 Why: a button is involved, but there is error text, so the kind is `error`, not `feature`. The error text is copied exactly into `known`. The cause stays in `guessed` even though it is likely.
+
+## Example 3: a fix broke something that worked
+
+```
+사용자: 로그인 버튼 색을 파랑으로 바꿔 줘
+AI: 로그인 버튼 색을 파랑으로 바꿨어요.
+사용자: 색은 바뀌었는데 아까는 됐던 로그인이 안 돼. 버튼 눌러도 그대로야
+AI: 로그인을 고쳤어요.
+사용자: 안 돼
+사용자: 다시 해 줘
+```
+
+Detect result:
+```
+status: 막힘
+signal: repeat-short
+evidence: "안 돼", "다시 해 줘"
+turns: 2
+```
+
+Analyze result:
+```
+intent: 버튼 색은 바꾼 채로 로그인이 전처럼 되게 하고 싶다 (추측)
+trying_now: 버튼 색을 바꾼 뒤 로그인이 안 돼 고쳐 달라고 했지만 그대로임
+stuck_at: feature - 로그인 버튼을 눌러도 로그인이 되지 않음
+known: 버튼 색은 바뀜, 로그인 버튼을 눌러도 그대로임, 전에 됨: 로그인
+guessed: 색을 바꾸면서 로그인 쪽도 같이 바뀐 것 (추측)
+```
+
+Why: pressing the button does nothing and there is no error text, so the kind is `feature`; the colour change is what happened before, not where it breaks, so it is not `screen`. "아까는 됐던 로그인" is the user's own statement, so it becomes `전에 됨: 로그인`. Nothing else is listed as working before, because the user named nothing else.
 
 ## Output
 
